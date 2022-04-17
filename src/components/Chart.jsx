@@ -11,8 +11,11 @@ const Chart = ({metrics, visits}) => {
     const [height, setHeight] = useState();
     const [heightLarge, setHeightLarge] = useState();
     const [activevisit, setactivevisit] = useState(null)
-    const [activescale, setactivescale] = useState();
+    const [activescale, setactivescale] = useState('All time');
     const [activedisplay, setactivedisplay] = useState()
+    const [activeMetric, setactiveMetric] = useState()
+    // const [test , setTest] = useState()
+    // const [chartMinDate, setchartMinDate] = useState()
 
     //find ranges for x and y scales
     function min_max(arr, field) {
@@ -46,13 +49,16 @@ const Chart = ({metrics, visits}) => {
     });
   
     const scales = ["3 months", "6 months", "1 year", "All time"];
-    let activeScale = "All time";
-    let activeMetric = Object.keys(metrics)[0];
+    // let activeScale = "All time";
+    // setactiveMetric( Object.keys(metrics)[0]);
     // let activeDisplay = "values";
     
     let activeVisit = null;
     
+    // setchartMinDate(minDate)
     let chartMinDate = minDate;
+    console.log('chartMinDate at the start',chartMinDate.valueOf())
+    // setTest(minDate.valueOf())
   
     const labelWidthPct = 30; //width of first column (%)
     const rowHeightPct = 50 / Object.keys(metrics).length; //in % for css
@@ -110,8 +116,6 @@ const Chart = ({metrics, visits}) => {
       let i = visits.indexOf(activeVisit);
       wheelDelta < 0 ? --i : i++;
       if (i < 0 || i > activeVisit.length - 1) return;
-      // activeVisit = visits[i];
-      console.log('visits[i]',visits[i])
       setactivevisit(visits[i])
     }
   
@@ -126,8 +130,12 @@ const Chart = ({metrics, visits}) => {
           : timescale == "6 months"
           ? new Date() - MS_PER_DAY * 180
           : new Date() - MS_PER_DAY * 90;
+
       // activeScale = timescale;
+      // setTest(chartMinDate)
+      console.log('chartMinDate',chartMinDate)
       setactivescale(timescale)
+      // setchartMinDate(chartmindate)
     }
     // NEW
     // set_xScale(chartMinDate)
@@ -146,6 +154,7 @@ const Chart = ({metrics, visits}) => {
       setHeight(svgHeight)
       setHeightLarge(svgHeightLarge)
       setactivedisplay('values')
+      setactiveMetric( Object.keys(metrics)[0]);
       
       set_xScale(chartMinDate);
       set_hAxis();
@@ -183,7 +192,9 @@ const Chart = ({metrics, visits}) => {
               <div
                 className={`button button-left ${activedisplay == "charts" ? 'bold' : ''} `}
                 onClick={() => {
-                  if (activedisplay != "charts") activedisplay = "charts";
+                  if (activedisplay != "charts") setactivedisplay('charts') 
+
+                  // if (activedisplay != "charts") activedisplay = "charts";
                 }}                
               >
                 charts
@@ -191,7 +202,7 @@ const Chart = ({metrics, visits}) => {
               <div
                 className={`button button-right ${activedisplay == "values" ? "bold": ''}`}
                 onClick= {() => {
-                  if (activedisplay != "values") activedisplay = "values";
+                  if (activedisplay != "values") setactivedisplay("values")  
                 }}
               >
                 values
@@ -259,15 +270,18 @@ const Chart = ({metrics, visits}) => {
           const h = active ? heightLarge : height
           const yScale = linear([metrics[key].min, metrics[key].max], [h * 0.9, h * 0.1])
           const midY = yScale((metrics[key].min + metrics[key].max) / 2)
+          // console.log('key',key)
           return (
           <div
             className={`chart-row metric-row ${active ? "active-metric": ''}`}
-            style={{height: + active ? 50 : rowHeightPct + '%'  }}
+          
+            style={{height: + active ? 50 + "%" : rowHeightPct + '%'  }}
           >
             <div
               className="metric-header"
               style={{width: + labelWidthPct + '%'}}
-              onClick={() => (activeMetric = key)}
+              onClick={() => setactiveMetric(key)}
+                
             >
               <div className="metric-text">{key}</div>
               <div
@@ -294,7 +308,7 @@ const Chart = ({metrics, visits}) => {
                   height={h}
                   viewBox={`0 0 ${width} ${h}`}
                   preserveAspectRatio="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                  // xmlns="http://www.w3.org/2000/svg"
                 >
                   {/* {console.log('width, h', width,h)} */}
                   {/* Vertical lines are drawn usin this code */}
