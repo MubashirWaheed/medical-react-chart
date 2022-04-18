@@ -211,6 +211,7 @@ svg path {
 }
 
 .axis-horizontal {
+  
   fill: grey;
   stroke: none;
   font-size: 0.85em;
