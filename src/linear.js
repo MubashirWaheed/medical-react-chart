@@ -9,9 +9,11 @@
 	const d0 = domain[0];
 	const r0 = range[0];
 	const m = (range[1] - r0) / (domain[1] - d0);
+	// console.log('range',range)
 
 	/** @param {number} num */
 	function scale(num) {
+		// console.log('r0',r0)
 		return r0 + (num - d0) * m;
 	}
 	// console.log('range',range)

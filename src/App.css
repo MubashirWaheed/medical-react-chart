@@ -9,7 +9,7 @@
   user-select: none;
   display: grid;
   grid-template-rows: max-content 1fr;
-  border: 1px solid green;
+  /* border: 1px solid green; */
   padding: 0.75em;
   /* Newly added */
   /* width: 800px; */
@@ -30,7 +30,7 @@
   /* height: 100%; */
   display: grid;
   grid-template-rows: max-content 1fr;
-  border: 1px solid green;
+  /* border: 1px solid green; */
 }
 
 .region {

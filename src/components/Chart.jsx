@@ -5,7 +5,7 @@ import linear from '../linear'
 const Chart = ({metrics, visits}) => {
     const ref = useRef(null);
     const [mounted, setMounted] = useState(false)
-    const [tW , setTotalWidth] = useState();
+    const [tW , setTotalWidth] = useState('776');
     const [tH, setTotalHeight] = useState();
     const [width,setWidth] = useState()
     const [height, setHeight] = useState();
@@ -14,7 +14,7 @@ const Chart = ({metrics, visits}) => {
     const [activescale, setactivescale] = useState('All time');
     const [activedisplay, setactivedisplay] = useState()
     const [activeMetric, setactiveMetric] = useState()
-    const [test , setTest] = useState('Wed Feb 11 2015 05:00:00 ');
+    const [chartmindate , setchartmindate] = useState('');
 
     //find ranges for x and y scales
     function min_max(arr, field) {
@@ -49,11 +49,9 @@ const Chart = ({metrics, visits}) => {
     });
   
     const scales = ["3 months", "6 months", "1 year", "All time"];
-    // setactiveMetric( Object.keys(metrics)[0]);
     
     let activeVisit = null;
     
-    // setchartMinDate(minDate)
     let chartMinDate = minDate;
   
     const labelWidthPct = 30; //width of first column (%)
@@ -64,6 +62,8 @@ const Chart = ({metrics, visits}) => {
     let hticks, hlabels;
   
     function set_xScale(start) {
+      console.log('start',start)
+      console.log('width from xScale: ', width)
       xScale = linear([start, maxDate], [width * 0.05, width * 0.92]);
     }
 
@@ -71,11 +71,11 @@ const Chart = ({metrics, visits}) => {
     set_hAxis();
     function set_hAxis() {
       const count = activescale == "All time" ? 8 : 6;
-      const step = (maxDate - test) / count;
-      console.log('test',test)
+      const step = (maxDate - chartmindate) / count;
+      // console.log('test',chartmindate)
       hticks = Array.from(
         { length: count + 1 },
-        (_, i) => new Date(step * i + test.valueOf())
+        (_, i) => new Date(step * i + chartmindate.valueOf())
         );
     }
     const MONTHS = [
@@ -114,7 +114,7 @@ const Chart = ({metrics, visits}) => {
       if (i < 0 || i > activeVisit.length - 1) return;
       setactivevisit(visits[i])
     }
-  
+
     function handle_scale_change(timescale) {
       if (activescale == timescale) return;
       const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -127,13 +127,9 @@ const Chart = ({metrics, visits}) => {
           ? new Date() - MS_PER_DAY * 180
           : new Date() - MS_PER_DAY * 90;
 
-      setTest(chartMinDate)
-      // console.log('xScale',xScale)
+      setchartmindate(chartMinDate)
       setactivescale(timescale)
     }
-    // NEW
-    // set_xScale(chartMinDate)
-    // set_hAxis();
     
     useEffect(()=>{
       setTotalWidth(ref.current.offsetWidth)
@@ -148,11 +144,10 @@ const Chart = ({metrics, visits}) => {
       setHeightLarge(svgHeightLarge)
       setactivedisplay('values')
       setactiveMetric( Object.keys(metrics)[0]);
-      setTest(minDate)
-      set_xScale(test);
+      setchartmindate(chartMinDate)
+      set_xScale(chartmindate);
       set_hAxis();
       setMounted(true)
-      // mounted = true;
     },[])
 
   return (
@@ -168,7 +163,6 @@ const Chart = ({metrics, visits}) => {
                       key={i}
                       className={`button ${i==0 ? 'button-right': ''} ${i == scales.length - 1 ? 'button-right': ''} ${activescale == sc ? 'bold': ''} `}                      
                       onClick={()=> {
-                        console.log('sc clicked',sc);
                         handle_scale_change(sc)}
                       }
                     >
@@ -186,7 +180,6 @@ const Chart = ({metrics, visits}) => {
                 className={`button button-left ${activedisplay == "charts" ? 'bold' : ''} `}
                 onClick={() => {
                   if (activedisplay != "charts") setactivedisplay('charts') 
-                  // if (activedisplay != "charts") activedisplay = "charts";
                 }}                
               >
                 charts
@@ -204,10 +197,9 @@ const Chart = ({metrics, visits}) => {
         </div>
       </div>
       
-      {/* INSIDE ACTIVE SCALE */}
       <div id="chart"
       ref={ref}
-      style={{border:'5px solid black'}}
+      // style={{border:'5px solid black'}}
       >
         <div className="chart-row" style={{height:+ rowHeightPct + "%"}}>
             <div className="column-header" style={{width: +labelWidthPct + "%"}}>
@@ -218,19 +210,20 @@ const Chart = ({metrics, visits}) => {
               <svg
                 width={width}
                 height={height}
-                // style={{display:"flex", justifyContent: "space-between"}}
                 viewBox={`0 0 ${width} ${height}`}
                 preserveAspectRatio="none"
                 onWheel={handle_wheel}
               >
-                {hticks.map((tick)=>{
+                {hticks.map((tick,i)=>{
                   console.log('tick',tick);
-                  return (
+                  return (                    
                     <text
+                      key={i}
                       className="axis-horizontal"
                       x={xScale(tick)}
                       y={height * 0.4}
-                      textAnchor="middle">{format_tick(tick)}
+                      textAnchor="middle">
+                        {format_tick(tick)}
                     </text>
                   )
                 })}
@@ -258,15 +251,15 @@ const Chart = ({metrics, visits}) => {
             </div>
         </div>
         
-        {Object.keys(metrics).map((key)=>{
+        {Object.keys(metrics).map((key,i)=>{
           const active = activeMetric == key ? true : false
           const h = active ? heightLarge : height
           const yScale = linear([metrics[key].min, metrics[key].max], [h * 0.9, h * 0.1])
           const midY = yScale((metrics[key].min + metrics[key].max) / 2)
           return (
-          <div
-            className={`chart-row metric-row ${active ? "active-metric": ''}`}
-          
+          <div 
+            key={i}
+            className={`chart-row metric-row ${active ? "active-metric": ''}`}       
             style={{height: + active ? 50 + "%" : rowHeightPct + '%'  }}
           >
             <div
@@ -277,7 +270,7 @@ const Chart = ({metrics, visits}) => {
               <div className="metric-text">{key}</div>
               <div
                 className="axis-vertical"
-                style={{padding:+ (active  ? h * 0.05 + "px 0": "0")}}
+                style={{padding: (active  ? h * 0.05 + "px 0": "0")}}
               >
                 <div>{metrics[key].max}</div>
                 {active &&
@@ -291,7 +284,6 @@ const Chart = ({metrics, visits}) => {
               </div>
             </div>
 
-            {/* Graph is being drawn here */}
             <div style={{width: + (100 - labelWidthPct) + "%"}}>
               {mounted && 
                 <svg
@@ -301,9 +293,8 @@ const Chart = ({metrics, visits}) => {
                   preserveAspectRatio="none"
                 >
 
-                  {/* Vertical lines are drawn usin this code */}
+                  {/* Vertical lines are being drawn usin this code */}
                   {visits.map((v)=>{
-
                    return(
                       <g className={`${activevisit == v ? "active-visit": ''}`} >
                         <line x1={xScale(v)} x2={xScale(v)} y1={0} y2={h} />
@@ -311,10 +302,9 @@ const Chart = ({metrics, visits}) => {
                    )
                   })}
                   
-                  {/* Fucntion below is used to make teh path in the chart*/}
+                  {/* Fucntion below is used to make the path in the chart*/}
                   {(active || activedisplay == "charts") ? (
                     <svg>           
-                        {/* {console.log('make_path',yScale)} */}
                       <path  d={make_path(yScale, metrics[key])} />
                         {metrics[key].map((val)=>{
                           const x = xScale(val.date)
